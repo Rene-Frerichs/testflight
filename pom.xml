@@ -89,6 +89,11 @@
         <artifactId>postgresql</artifactId>
         <version>42.2.17</version>
       </dependency>
+      <dependency>
+        <groupId>com.ibm.db2</groupId>
+        <artifactId>jcc</artifactId>
+        <version>11.5.4.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -114,6 +119,16 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>db2</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.db2</groupId>
+      <artifactId>jcc</artifactId>
       <optional>true</optional>
     </dependency>
 

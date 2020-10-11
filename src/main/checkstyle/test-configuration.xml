@@ -75,7 +75,7 @@
     <module name="BooleanExpressionComplexity"/>
     
     <module name="ConstantName">
-      <property name="format" value="^[A-Z]+(_[A-Z]+)*$"/>
+      <property name="format" value="^[A-Z]+[_A-Z0-9]*$"/>
     </module>
     <module name="CovariantEquals"/>
     <module name="CyclomaticComplexity">
@@ -147,7 +147,7 @@
       <property name="max" value="40"/>
     </module>
     <module name="MethodName">
-      <property name="format" value="^[a-z]+([A-Z][a-z]+)*$"/>
+      <property name="format" value="^[a-z]+[A-Za-z0-9]*$"/>
     </module>
     <module name="MethodParamPad"/>
     <module name="MissingOverride"/>
@@ -173,7 +173,7 @@
     <module name="OperatorWrap"/>
 
     <module name="PackageName">
-      <property name="format" value="^[a-z]+(\.[a-z]+)+$"/>
+      <property name="format" value="^[a-z]+(\.[a-z0-9]+)+$"/>
     </module>    
     <module name="ParameterName">
       <property name="format" value="^[a-z]+([A-Z][a-z]+)*$"/>
@@ -194,7 +194,7 @@
 
     <module name="TodoComment"/>
     <module name="TypeName">
-      <property name="format" value="^([A-Z][a-z]+)+$"/>
+      <property name="format" value="^[A-Z][A-Za-z0-9]+$"/>
     </module>
     <module name="TypecastParenPad"/>
 

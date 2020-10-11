@@ -15,15 +15,25 @@
  */
 package space.testflight;
 
+import static space.testflight.Flyway.BackupStrategy.TAG;
+import static space.testflight.Flyway.BackupStrategy.VOLUME;
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
+import static org.testcontainers.containers.Db2Container.DEFAULT_DB2_IMAGE_NAME;
 import static org.testcontainers.containers.PostgreSQLContainer.IMAGE;
 
+import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.DockerClientFactory;
+
+import com.github.dockerjava.api.model.Image;
 
 @ExtendWith(FlywayExtension.class)
 @Target({ANNOTATION_TYPE, TYPE})
@@ -34,20 +44,77 @@ public @interface Flyway {
   String[] testDataScripts() default {};
 
   enum DatabaseType {
-    POSTGRESQL(IMAGE);
+    POSTGRESQL(IMAGE, TAG, "/var/lib/postgresql/data"),
+    DB2(DEFAULT_DB2_IMAGE_NAME, VOLUME, "/database");
 
     private String image;
+    private BackupStrategy strategy;
+    private String path;
 
-    DatabaseType(String databaseImage) {
-      this.image = databaseImage;
+    DatabaseType(String databaseImage, BackupStrategy backupStrategy, String containerDataPath) {
+      image = databaseImage;
+      strategy = backupStrategy;
+      path = containerDataPath;
     }
 
     public String getImage() {
       return image;
     }
 
-    public String getImage(String tag) {
-      return getImage() + ":" + tag;
+    public BackupStrategy getBackupStrategy() {
+      return strategy;
     }
+
+    public String getContainerDataPath() {
+      return path;
+    }
+
+    public boolean isBackupAvailable(String backupIdentifier) {
+      switch (strategy) {
+        case TAG:
+          return isBackupImageAvailable(backupIdentifier);
+        default:
+          return isBackupDirectoryAvailable(backupIdentifier);
+      }
+    }
+
+    public String getBackupImage(String backupIdentifier) {
+      switch (strategy) {
+        case TAG:
+          return getImage() + ":" + backupIdentifier;
+        default:
+          return getImage();
+      }
+    }
+
+    public String getBackupDirectory(String backupIdentifier) {
+      return "target" + System.getProperty("file.separator") + backupIdentifier;
+    }
+
+    public File getBackupFile(String backupIdentifier) {
+      return new File(getBackupDirectory(backupIdentifier));
+    }
+
+    private boolean isBackupImageAvailable(String backupIdentifier) {
+      List<Image> imageList = DockerClientFactory.lazyClient()
+        .listImagesCmd()
+        .exec();
+
+      return imageList.stream()
+        .map(i -> i.getRepoTags())
+        .filter(Objects::nonNull)
+        .flatMap(Arrays::stream)
+        .anyMatch(t -> t.equals(getBackupImage(backupIdentifier)));
+
+    }
+
+    private boolean isBackupDirectoryAvailable(String backupIdentifier) {
+      File directory = new File(getBackupDirectory(backupIdentifier));
+      return directory.exists() && directory.isDirectory();
+    }
+  }
+
+  enum BackupStrategy {
+    TAG, VOLUME;
   }
 }
